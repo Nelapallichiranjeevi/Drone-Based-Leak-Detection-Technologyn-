@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drone-Based Leak Detection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            padding: 20px;
+        }
+        img {
+            width: 80%;
+            border: 2px solid #333;
+            margin-top: 20px;
+        }
+        .status {
+            font-size: 20px;
+            margin-top: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            display: inline-block;
+        }
+        .control-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 18px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .start-button {
+            background-color: green;
+            color: white;
+        }
+        .stop-button {
+            background-color: red;
+            color: white;
+        }
+        .restart-button {
+            background-color: blue;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Drone-Based Leak Detection</h1>
+        <h3>Real-Time Video Feed</h3>
+        <img id="video-stream" src="" alt="Live Video Feed">
+        <h3>Leak Detection Status</h3>
+        <div id="leak-status" class="status">Analyzing...</div>
+        <button class="control-button start-button" onclick="startVideoFeed()">Start Video</button>
+        <button class="control-button stop-button" onclick="stopVideoFeed()">Stop Video</button>
+        <button class="control-button restart-button" onclick="restartVideoFeed()">Restart Video</button>
+    </div>
+
+    <script>
+        function fetchLeakStatus() {
+            fetch('/analyze_frame')
+                .then(response => response.json())
+                .then(data => {
+                    const statusDiv = document.getElementById('leak-status');
+                    statusDiv.textContent = `Leak Probability: ${data.leak_probability}, ${data.result}`;
+                    statusDiv.style.backgroundColor = data.result.includes("Leak") ? "red" : "green";
+                    statusDiv.style.color = "white";
+                });
+        }
+        setInterval(fetchLeakStatus, 3000);
+
+        function startVideoFeed() {
+            fetch('/start_video', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    document.getElementById("video-stream").src = "/video_feed";});
+        }
+
+        function stopVideoFeed() {
+            fetch('/stop_video', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    document.getElementById("video-stream").src = "";
+                });
+        }
+
+        function restartVideoFeed() {
+            stopVideoFeed();
+            setTimeout(startVideoFeed, 1000);
+        }
+    </script>
+</body>
+</html>
